@@ -42,6 +42,12 @@ const run = async () => {
       const workStatus = await cursor.toArray();
       res.send({ status: true, data: workStatus });
     });
+    //Get All work status
+    app.get("/leave-management", async (req, res) => {
+      const cursor = leaveManagementCollection.find({});
+      const allLeaves = await cursor.toArray();
+      res.send({ status: true, data: allLeaves });
+    });
 
     //Add Profile
     app.post("/profile", async (req, res) => {
@@ -57,6 +63,15 @@ const run = async () => {
       const singleWorkStatus = req.body;
       console.log(singleWorkStatus);
       const result = await workStatusCollection.insertOne(singleWorkStatus, {
+        writeConcern: { w: 0 },
+      });
+      res.send({ status: true, data: result });
+    });
+    //Add work status
+    app.post("/leave-management", async (req, res) => {
+      const leaveApply = req.body;
+      console.log(leaveApply);
+      const result = await leaveManagementCollection.insertOne(leaveApply, {
         writeConcern: { w: 0 },
       });
       res.send({ status: true, data: result });
