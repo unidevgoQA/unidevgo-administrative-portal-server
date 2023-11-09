@@ -27,6 +27,8 @@ const run = async () => {
     console.log("db connected");
     const database = client.db("unidevgo-administrative-portal");
     const profileCollection = database.collection("profile");
+    const workStatusCollection = database.collection("work-status");
+    const leaveManagementCollection = database.collection("leave-management");
 
     //Get All Profile
     app.get("/profile", async (req, res) => {
@@ -34,12 +36,27 @@ const run = async () => {
       const profiles = await cursor.toArray();
       res.send({ status: true, data: profiles });
     });
+    //Get All work status
+    app.get("/work-status", async (req, res) => {
+      const cursor = workStatusCollection.find({});
+      const workStatus = await cursor.toArray();
+      res.send({ status: true, data: workStatus });
+    });
 
     //Add Profile
     app.post("/profile", async (req, res) => {
       const profile = req.body;
       console.log(profile);
       const result = await profileCollection.insertOne(profile, {
+        writeConcern: { w: 0 },
+      });
+      res.send({ status: true, data: result });
+    });
+    //Add work status
+    app.post("/work-status", async (req, res) => {
+      const singleWorkStatus = req.body;
+      console.log(singleWorkStatus);
+      const result = await workStatusCollection.insertOne(singleWorkStatus, {
         writeConcern: { w: 0 },
       });
       res.send({ status: true, data: result });
