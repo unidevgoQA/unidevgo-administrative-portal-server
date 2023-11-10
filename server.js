@@ -1,7 +1,9 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
+// const ObjectId = require("mongodb").ObjectId;
+// const ObjectId = require('mongodb').ObjectId;
 const cors = require("cors");
 
 const port = process.env.PORT || 5000;
@@ -86,6 +88,34 @@ const run = async () => {
       res.send({ status: false });
     });
 
+    //Delete single item from work status Api
+    app.delete("/work-status/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await workStatusCollection.deleteOne(query, {
+        writeConcern: { w: 0 },
+      });
+      res.json({ status: true, data: result });
+    });
+    //Delete single item from leave-management Api
+    app.delete("/leave-management/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await leaveManagementCollection.deleteOne(query, {
+        writeConcern: { w: 0 },
+      });
+      res.json({ status: true, data: result });
+    });
+    //Delete single item from profile Api
+    app.delete("/profile/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await profileCollection.deleteOne(query, {
+        writeConcern: { w: 0 },
+      });
+      res.json({ status: true, data: result });
+    });
   } finally {
   }
 };
