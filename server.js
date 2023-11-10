@@ -114,37 +114,27 @@ const run = async () => {
       res.json({ status: true, data: result });
     });
     //Update Work Status
-    // app.put("/work-status/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const updatedTaskStatus = req.body;
-    //   console.log("id" , id)
-    //   console.log(updatedTaskStatus);
-    //   const filter = { _id: new ObjectId(id) };
-    //   const options = { upsert: true };
-    //   const updateTask = {
-    //     $set: {
-    //       date: updatedTaskStatus.date,
-    //       description: updatedTaskStatus.description,
-    //       hour: updatedTaskStatus.hour,
-    //       task:updatedTaskStatus.task,
-    //       workStatus:updatedTaskStatus.workStatus,
-    //       employeeEmail:updatedTaskStatus.employeeEmail,
-    //       employeeName:updatedTaskStatus.employeeName,
-    //       employeeImg:updatedTaskStatus.employeeImg
-    //     },
-    //   };
-    //   const result = await workStatusCollection.updateOne(
-    //     filter,
-    //     updateTask,
-    //     options,{
-    //       writeConcern : {
-    //         w:'majority',
-    //         wtimeout:0
-    //       }
-    //     }
-    //   );
-    //   res.send({ status: true, data: result });
-    // });
+    app.put("/work-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedTaskStatus = req.body;
+
+      console.log(id, updatedTaskStatus);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateTask = {
+        $set: {
+          workStatus:updatedTaskStatus.workStatus,      
+        },
+      };
+      const result = await workStatusCollection.updateOne(
+        filter,
+        updateTask,
+        options,{
+          writeConcern: { w:0}
+        }
+      );
+      res.send({ status: true, data: result });
+    });
 
   } finally {
   }
