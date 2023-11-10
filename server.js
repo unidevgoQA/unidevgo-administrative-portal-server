@@ -2,10 +2,8 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
-// const ObjectId = require("mongodb").ObjectId;
-// const ObjectId = require('mongodb').ObjectId;
-const cors = require("cors");
 
+const cors = require("cors");
 const port = process.env.PORT || 5000;
 
 //Middleware
@@ -87,7 +85,6 @@ const run = async () => {
       }
       res.send({ status: false });
     });
-
     //Delete single item from work status Api
     app.delete("/work-status/:id", async (req, res) => {
       const id = req.params.id;
@@ -116,6 +113,39 @@ const run = async () => {
       });
       res.json({ status: true, data: result });
     });
+    //Update Work Status
+    // app.put("/work-status/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const updatedTaskStatus = req.body;
+    //   console.log("id" , id)
+    //   console.log(updatedTaskStatus);
+    //   const filter = { _id: new ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updateTask = {
+    //     $set: {
+    //       date: updatedTaskStatus.date,
+    //       description: updatedTaskStatus.description,
+    //       hour: updatedTaskStatus.hour,
+    //       task:updatedTaskStatus.task,
+    //       workStatus:updatedTaskStatus.workStatus,
+    //       employeeEmail:updatedTaskStatus.employeeEmail,
+    //       employeeName:updatedTaskStatus.employeeName,
+    //       employeeImg:updatedTaskStatus.employeeImg
+    //     },
+    //   };
+    //   const result = await workStatusCollection.updateOne(
+    //     filter,
+    //     updateTask,
+    //     options,{
+    //       writeConcern : {
+    //         w:'majority',
+    //         wtimeout:0
+    //       }
+    //     }
+    //   );
+    //   res.send({ status: true, data: result });
+    // });
+
   } finally {
   }
 };
