@@ -67,7 +67,7 @@ const run = async () => {
       });
       res.send({ status: true, data: result });
     });
-    //Add work status
+    //Add leave management
     app.post("/leave-management", async (req, res) => {
       const leaveApply = req.body;
       console.log(leaveApply);
