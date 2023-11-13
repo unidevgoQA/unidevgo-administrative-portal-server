@@ -48,7 +48,13 @@ const run = async () => {
       const allLeaves = await cursor.toArray();
       res.send({ status: true, data: allLeaves });
     });
-
+    //Get single profile
+    app.get("/profile/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await profileCollection.findOne(query);
+      res.send({ status: true, data: result });
+    });
     //Add Profile
     app.post("/profile", async (req, res) => {
       const profile = req.body;
@@ -68,7 +74,8 @@ const run = async () => {
       res.send({ status: true, data: result });
     });
     //Get profile by email
-    app.get("/profile/:email", async (req, res) => {
+    app.get("/register-user/:email", async (req, res) => {
+     
       const email = req.params.email;
       const result = await profileCollection.findOne({ email });
       if (result?.email) {
@@ -121,16 +128,42 @@ const run = async () => {
       const updatedLeaveStatus = req.body;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
-      const updateTask = {
+      const updateLeave = {
         $set: {
           status: updatedLeaveStatus.leaveStatus,
         },
       };
+      console.log("leave" , updateLeave)
       const result = await leaveManagementCollection.updateOne(
         filter,
-        updateTask,
+        updateLeave,
         options
       );
+      res.send({ status: true, data: result });
+    });
+    //Update profile
+    app.put("/profile/:id", async (req, res) => {
+      const id = req.params.id;
+      const profile = req.body;
+      
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      // console.log("profile" , profile)
+
+      const updateProfile = {
+        $set: {
+          ...profile
+        },
+      };
+
+      console.log("Updated",updateProfile);
+      const result = await profileCollection.updateOne(
+        filter,
+        updateProfile,
+        options
+      );
+      // console.log({ status: true, data: result });
       res.send({ status: true, data: result });
     });
   } finally {
