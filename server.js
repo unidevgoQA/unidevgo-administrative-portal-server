@@ -75,7 +75,6 @@ const run = async () => {
     });
     //Get profile by email
     app.get("/register-user/:email", async (req, res) => {
-     
       const email = req.params.email;
       const result = await profileCollection.findOne({ email });
       if (result?.email) {
@@ -133,7 +132,7 @@ const run = async () => {
           status: updatedLeaveStatus.leaveStatus,
         },
       };
-      console.log("leave" , updateLeave)
+      console.log("leave", updateLeave);
       const result = await leaveManagementCollection.updateOne(
         filter,
         updateLeave,
@@ -144,26 +143,21 @@ const run = async () => {
     //Update profile
     app.put("/profile/:id", async (req, res) => {
       const id = req.params.id;
-      const profile = req.body;
-      
+      const profile = req.body.updateProfile;
+
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
 
-      // console.log("profile" , profile)
-
       const updateProfile = {
         $set: {
-          ...profile
+          ...profile,
         },
       };
-
-      console.log("Updated",updateProfile);
       const result = await profileCollection.updateOne(
         filter,
         updateProfile,
         options
       );
-      // console.log({ status: true, data: result });
       res.send({ status: true, data: result });
     });
   } finally {
