@@ -42,6 +42,7 @@ const run = async () => {
       const workStatus = await cursor.toArray();
       res.send({ status: true, data: workStatus });
     });
+    
     //Get All work status
     app.get("/leave-management", async (req, res) => {
       const cursor = leaveManagementCollection.find({});
@@ -132,7 +133,6 @@ const run = async () => {
           status: updatedLeaveStatus.leaveStatus,
         },
       };
-      console.log("leave", updateLeave);
       const result = await leaveManagementCollection.updateOne(
         filter,
         updateLeave,
