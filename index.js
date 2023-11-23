@@ -42,7 +42,7 @@ const run = async () => {
       const workStatus = await cursor.toArray();
       res.send({ status: true, data: workStatus });
     });
-    
+
     //Get All work status
     app.get("/leave-management", async (req, res) => {
       const cursor = leaveManagementCollection.find({});
@@ -145,6 +145,9 @@ const run = async () => {
       const id = req.params.id;
       const profile = req.body.updateProfile;
 
+      console.log("id", id);
+      console.log("profile", profile);
+
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
 
@@ -153,6 +156,9 @@ const run = async () => {
           ...profile,
         },
       };
+      // Remove _id from the update, as it is immutable
+      delete updateProfile.$set._id;
+      
       const result = await profileCollection.updateOne(
         filter,
         updateProfile,
