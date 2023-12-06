@@ -33,6 +33,7 @@ const run = async () => {
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
     const eventManagementCollection = database.collection("event-management");
+    const attendenceManagementCollection = database.collection("attendence-management");
 
     //Get All Profile
     app.get("/profile", async (req, res) => {
@@ -52,7 +53,12 @@ const run = async () => {
       const AllEvents = await cursor.toArray();
       res.send({ status: true, data: AllEvents });
     });
-
+    //Get All attendence 
+    app.get("/attendence", async (req, res) => {
+      const cursor = attendenceManagementCollection.find({});
+      const AllAttendence = await cursor.toArray();
+      res.send({ status: true, data: AllAttendence });
+    });
     //Get All work status
     app.get("/leave-management", async (req, res) => {
       const cursor = leaveManagementCollection.find({});
@@ -83,6 +89,13 @@ const run = async () => {
       const singleEvent = req.body;
       console.log('Event' , singleEvent)
       const result = await eventManagementCollection.insertOne(singleEvent);
+      res.send({ status: true, data: result });
+    });
+    //Add Attendence
+    app.post("/attendence", async (req, res) => {
+      const singleAttendence = req.body;
+      console.log('Event' , singleAttendence)
+      const result = await attendenceManagementCollection.insertOne(singleAttendence);
       res.send({ status: true, data: result });
     });
     //Add leave management
