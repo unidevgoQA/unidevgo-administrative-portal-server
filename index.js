@@ -32,6 +32,7 @@ const run = async () => {
     const profileCollection = database.collection("profile");
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
+    const eventManagementCollection = database.collection("event-management");
 
     //Get All Profile
     app.get("/profile", async (req, res) => {
@@ -44,6 +45,12 @@ const run = async () => {
       const cursor = workStatusCollection.find({});
       const workStatus = await cursor.toArray();
       res.send({ status: true, data: workStatus });
+    });
+    //Get All work status
+    app.get("/calender-events", async (req, res) => {
+      const cursor = eventManagementCollection.find({});
+      const AllEvents = await cursor.toArray();
+      res.send({ status: true, data: AllEvents });
     });
 
     //Get All work status
@@ -71,6 +78,13 @@ const run = async () => {
       const result = await workStatusCollection.insertOne(singleWorkStatus);
       res.send({ status: true, data: result });
     });
+    //Add Event
+    app.post("/calender-events", async (req, res) => {
+      const singleEvent = req.body;
+      console.log('Event' , singleEvent)
+      const result = await eventManagementCollection.insertOne(singleEvent);
+      res.send({ status: true, data: result });
+    });
     //Add leave management
     app.post("/leave-management", async (req, res) => {
       const leaveApply = req.body;
@@ -91,6 +105,13 @@ const run = async () => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await workStatusCollection.deleteOne(query);
+      res.json({ status: true, data: result });
+    });
+    //Delete single item from calender-events Api
+    app.delete("/calender-events/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await eventManagementCollection.deleteOne(query);
       res.json({ status: true, data: result });
     });
     //Delete single item from leave-management Api
