@@ -1,5 +1,7 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const nodemailer = require("nodemailer");
+const bodyParser = require("body-parser");
 const app = express();
 require("dotenv").config();
 
@@ -7,10 +9,12 @@ const cors = require("cors");
 const port = process.env.PORT || 5000;
 
 //Middleware
-app.use(cors({
-  credentials : true
-}));
-
+app.use(
+  cors({
+    credentials: true,
+  })
+);
+app.use(bodyParser.json());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@clusterunidevgo.2nk4dzo.mongodb.net/?retryWrites=true`;
@@ -33,7 +37,9 @@ const run = async () => {
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
     const eventManagementCollection = database.collection("event-management");
-    const attendenceManagementCollection = database.collection("attendence-management");
+    const attendenceManagementCollection = database.collection(
+      "attendence-management"
+    );
 
     //Get All Profile
     app.get("/profile", async (req, res) => {
@@ -53,7 +59,7 @@ const run = async () => {
       const AllEvents = await cursor.toArray();
       res.send({ status: true, data: AllEvents });
     });
-    //Get All attendence 
+    //Get All attendence
     app.get("/attendence", async (req, res) => {
       const cursor = attendenceManagementCollection.find({});
       const AllAttendence = await cursor.toArray();
@@ -87,17 +93,75 @@ const run = async () => {
     //Add Event
     app.post("/calender-events", async (req, res) => {
       const singleEvent = req.body;
-      console.log('Event' , singleEvent)
+      console.log("Event", singleEvent);
       const result = await eventManagementCollection.insertOne(singleEvent);
       res.send({ status: true, data: result });
     });
     //Add Attendence
     app.post("/attendence", async (req, res) => {
       const singleAttendence = req.body;
-      console.log('Event' , singleAttendence)
-      const result = await attendenceManagementCollection.insertOne(singleAttendence);
-      res.send({ status: true, data: result });
+      const requestedDate = new Date(singleAttendence.date);
+      console.log(singleAttendence, requestedDate);
+
+      try {
+        const existingEntry = await attendenceManagementCollection.findOne({
+          date: requestedDate,
+        });
+
+        if (existingEntry) {
+          return res.json({
+            status: false,
+            message: "Attendance record already exists for the specified date.",
+          });
+        } else {
+          const result = await attendenceManagementCollection.insertOne(
+            singleAttendence
+          );
+          return res.json({
+            status: true,
+            message: "Attendance record added successfully.",
+            data: result,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        return res
+          .status(500)
+          .json({ status: false, error: "Internal Server Error" });
+      }
     });
+
+    //Send Email
+    app.post("/send-email", (req, res) => {
+      const { recipients, subject, message } = req.body;
+      console.log(recipients, subject, message);
+
+      // Setup Nodemailer transporter
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.SENDER_EMAIL,
+          pass: process.env.SENDER_PASSWORD,
+        },
+      });
+
+      // Setup email data
+      const mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: recipients.join(","),
+        subject: subject,
+        text: message,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(500).send(error.toString());
+        }
+        res.status(200).send("Email sent: " + info.response);
+      });
+    });
+
     //Add leave management
     app.post("/leave-management", async (req, res) => {
       const leaveApply = req.body;
@@ -132,6 +196,13 @@ const run = async () => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await leaveManagementCollection.deleteOne(query);
+      res.json({ status: true, data: result });
+    });
+    //Delete single item from leave-management Api
+    app.delete("/attendence/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await attendenceManagementCollection.deleteOne(query);
       res.json({ status: true, data: result });
     });
     //Delete single item from profile Api
