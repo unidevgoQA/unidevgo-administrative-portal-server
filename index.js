@@ -134,7 +134,6 @@ const run = async () => {
     //Send Email
     app.post("/send-email", (req, res) => {
       const { recipients, subject, message } = req.body;
-      console.log(recipients, subject, message);
 
       // Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
@@ -248,6 +247,73 @@ const run = async () => {
       );
       res.send({ status: true, data: result });
     });
+
+    //Send leave email
+    app.post("/leave-email", (req, res) => {
+      const {
+        leaveStatus,
+        employeeEmail,
+        employeeName,
+        totalDays,
+        leaveApply,
+        type,
+      } = req.body;
+
+      //Setup Nodemailer transporter
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.SENDER_EMAIL,
+          pass: process.env.SENDER_PASSWORD,
+        },
+      });
+
+      // Setup email data
+      const mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: employeeEmail,
+        subject: `${
+          leaveStatus.charAt(0).toUpperCase() + leaveStatus.slice(1)
+        } Leave Application of ${
+          employeeName.charAt(0).toUpperCase() + employeeName.slice(1)
+        }`,
+        text: `
+        
+        Hi ${employeeName.charAt(0).toUpperCase() + employeeName.slice(1)},
+
+        You have requested to take leave on ${leaveApply} for ${totalDays} day/s. Please see
+        the details for future reference:
+
+      • Requested By: ${
+        employeeName.charAt(0).toUpperCase() + employeeName.slice(1)
+      }
+      • Requested On: ${leaveApply}
+      • Requested Days of Leave: ${totalDays}
+      • Response From HR: ${
+        leaveStatus.charAt(0).toUpperCase() + leaveStatus.slice(1)
+      }
+
+        This leave request was ${
+          leaveStatus.charAt(0).toUpperCase() + leaveStatus.slice(1)
+        }
+
+        Regards,
+
+        HR Department
+        unidevGO
+        Email: <mailto:hr@unidevgo.com|hr@unidevgo.com>
+        `,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(500).send(error.toString());
+        }
+        res.status(200).send("Email sent: " + info.response);
+      });
+    });
+
     //Update profile
     app.put("/profile/:id", async (req, res) => {
       const id = req.params.id;
