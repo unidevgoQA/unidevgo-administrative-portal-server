@@ -37,6 +37,7 @@ const run = async () => {
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
     const eventManagementCollection = database.collection("event-management");
+    const supportTicketsCollection = database.collection("support-tickets-managements");
     const attendenceManagementCollection = database.collection(
       "attendence-management"
     );
@@ -71,6 +72,12 @@ const run = async () => {
       const allLeaves = await cursor.toArray();
       res.send({ status: true, data: allLeaves });
     });
+    //Get All work status
+    app.get("/support-tickets", async (req, res) => {
+      const cursor = supportTicketsCollection.find({});
+      const allTickets = await cursor.toArray();
+      res.send({ status: true, data: allTickets });
+    });
     //Get single profile
     app.get("/profile/:id", async (req, res) => {
       const id = req.params.id;
@@ -97,12 +104,21 @@ const run = async () => {
       const result = await eventManagementCollection.insertOne(singleEvent);
       res.send({ status: true, data: result });
     });
+    //Add Support Ticket
+    app.post("/support-tickets", async (req, res) => {
+      const ticket = req.body;
+      const singleTicket = {
+        ...ticket,
+        replies : []
+      }
+      const result = await supportTicketsCollection.insertOne(singleTicket);
+      res.send({ status: true, data: result });
+    });
+
     //Add Attendence
     app.post("/attendence", async (req, res) => {
       const singleAttendence = req.body;
       const requestedDate = new Date(singleAttendence.date);
-      console.log(singleAttendence, requestedDate);
-
       try {
         const existingEntry = await attendenceManagementCollection.findOne({
           date: requestedDate,
@@ -337,6 +353,9 @@ const run = async () => {
       );
       res.send({ status: true, data: result });
     });
+
+
+
   } finally {
   }
 };
