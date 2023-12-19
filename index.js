@@ -37,7 +37,9 @@ const run = async () => {
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
     const eventManagementCollection = database.collection("event-management");
-    const supportTicketsCollection = database.collection("support-tickets-managements");
+    const supportTicketsCollection = database.collection(
+      "support-tickets-managements"
+    );
     const attendenceManagementCollection = database.collection(
       "attendence-management"
     );
@@ -85,6 +87,13 @@ const run = async () => {
       const result = await profileCollection.findOne(query);
       res.send({ status: true, data: result });
     });
+    //Get single profile
+    app.get("/support-tickets/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await supportTicketsCollection.findOne(query);
+      res.send({ status: true, data: result });
+    });
     //Add Profile
     app.post("/profile", async (req, res) => {
       const profile = req.body;
@@ -100,18 +109,37 @@ const run = async () => {
     //Add Event
     app.post("/calender-events", async (req, res) => {
       const singleEvent = req.body;
-      console.log("Event", singleEvent);
       const result = await eventManagementCollection.insertOne(singleEvent);
       res.send({ status: true, data: result });
     });
-    //Add Support Ticket
+    //Create Ticket
     app.post("/support-tickets", async (req, res) => {
       const ticket = req.body;
       const singleTicket = {
         ...ticket,
-        replies : []
-      }
+        replies: [],
+      };
       const result = await supportTicketsCollection.insertOne(singleTicket);
+      res.send({ status: true, data: result });
+    });
+    //Ticket Reply
+    app.post("/support-tickets/reply/:id", async (req, res) => {
+      const {
+        parentId,
+        reply,
+        date,
+        employeeEmail,
+        employeeImg,
+        employeeName,
+      } = req.body;
+      const result = await supportTicketsCollection.updateOne(
+        { _id: new ObjectId(parentId) },
+        {
+          $push: {
+            replies: { reply, date, employeeEmail, employeeImg, employeeName },
+          },
+        }
+      );
       res.send({ status: true, data: result });
     });
 
@@ -353,9 +381,6 @@ const run = async () => {
       );
       res.send({ status: true, data: result });
     });
-
-
-
   } finally {
   }
 };
