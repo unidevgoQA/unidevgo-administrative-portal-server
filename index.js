@@ -255,6 +255,13 @@ const run = async () => {
       const result = await profileCollection.deleteOne(query);
       res.json({ status: true, data: result });
     });
+    //Delete single item from support ticket
+    app.delete("/support-tickets/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await supportTicketsCollection.deleteOne(query);
+      res.json({ status: true, data: result });
+    });
     //Update Work Status
     app.put("/work-status/:id", async (req, res) => {
       const id = req.params.id;
