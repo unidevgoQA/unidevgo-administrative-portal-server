@@ -14,7 +14,9 @@ const port = process.env.PORT || 5000;
 //     credentials: true,
 //   })
 // );
-app.use(cors());
+app.use(cors({
+  origin: 'https://top-laurie-unidevgo.koyeb.app',
+}));
 app.use(bodyParser.json());
 app.use(express.json());
 
