@@ -14,9 +14,12 @@ const port = process.env.PORT || 5000;
 //     credentials: true,
 //   })
 // );
-app.use(cors({
-  origin: 'https://top-laurie-unidevgo.koyeb.app',
-}));
+const corsOptions = {
+  origin: 'http://localhost:5173', // Change to your client's origin
+  methods: 'POST',
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.json());
 
