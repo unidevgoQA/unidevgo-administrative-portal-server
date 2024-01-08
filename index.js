@@ -106,12 +106,14 @@ const run = async () => {
       const result = await workStatusCollection.insertOne(singleWorkStatus);
       res.send({ status: true, data: result });
     });
+
     //Add Event
     app.post("/calender-events", async (req, res) => {
       const singleEvent = req.body;
       const result = await eventManagementCollection.insertOne(singleEvent);
       res.send({ status: true, data: result });
     });
+
     //Create Ticket
     app.post("/support-tickets", async (req, res) => {
       const ticket = req.body;
@@ -122,12 +124,14 @@ const run = async () => {
       const result = await supportTicketsCollection.insertOne(singleTicket);
       res.send({ status: true, data: result });
     });
+
     //Ticket Reply
     app.post("/support-tickets/reply/:id", async (req, res) => {
       const {
         parentId,
         reply,
         date,
+        time,
         employeeEmail,
         employeeImg,
         employeeName,
@@ -136,7 +140,14 @@ const run = async () => {
         { _id: new ObjectId(parentId) },
         {
           $push: {
-            replies: { reply, date, employeeEmail, employeeImg, employeeName },
+            replies: {
+              reply,
+              date,
+              time,
+              employeeEmail,
+              employeeImg,
+              employeeName,
+            },
           },
         }
       );
@@ -178,7 +189,7 @@ const run = async () => {
     //Send Email
     app.post("/send-email", (req, res) => {
       const { recipients, subject, message } = req.body;
-
+      console.log(recipients, subject, message);
       // Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -199,9 +210,9 @@ const run = async () => {
       // Send email
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          return res.status(500).send(error.toString());
+          res.send({ error: error });
         }
-        res.status(200).send("Email sent: " + info.response);
+        res.send({ status: true });
       });
     });
 
