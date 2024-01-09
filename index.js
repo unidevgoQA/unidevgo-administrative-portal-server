@@ -8,12 +8,6 @@ require("dotenv").config();
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 
-//Middleware
-// app.use(
-//   cors({
-//     credentials: true,
-//   })
-// );
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
@@ -190,7 +184,6 @@ const run = async () => {
     //Send Email
     app.post("/send-email", (req, res) => {
       const { recipients, subject, message } = req.body;
-      console.log(recipients, subject, message);
       // Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
         service: "gmail",
