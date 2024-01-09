@@ -14,12 +14,7 @@ const port = process.env.PORT || 5000;
 //     credentials: true,
 //   })
 // );
-const corsOptions = {
-  origin: 'http://localhost:5173', // Change to your client's origin
-  methods: 'POST',
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 
