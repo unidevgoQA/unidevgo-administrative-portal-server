@@ -2,12 +2,16 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
+const multer = require("multer");
+const path = require("path");
 const app = express();
 require("dotenv").config();
 
 const cors = require("cors");
 const port = process.env.PORT || 5000;
-
+// Set up Multer for handling file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ dest: "uploads/" });
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
@@ -180,11 +184,10 @@ const run = async () => {
           .json({ status: false, error: "Internal Server Error" });
       }
     });
-
-    //Send Email
-    app.post("/send-email", (req, res) => {
+    //Send Mail
+    app.post("/send-email", upload.array("attachments"), (req, res) => {
       const { recipients, subject, message } = req.body;
-      // Setup Nodemailer transporter
+
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -193,20 +196,30 @@ const run = async () => {
         },
       });
 
-      // Setup email data
       const mailOptions = {
         from: process.env.SENDER_EMAIL,
-        to: recipients.join(","),
+        to: recipients.split(","),
         subject: subject,
         text: message,
+        attachments: [],
       };
 
-      // Send email
+      if (req.files) {
+        req.files.forEach((file) => {
+          mailOptions.attachments.push({
+            filename: file.originalname,
+            path: file.path,
+          });
+        });
+      }
+
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          res.send({ error: error });
+          return res.status(500).send({ error: error.toString() });
         }
-        res.send({ status: true });
+        res
+          .status(200)
+          .send({ status: true, message: "Email sent successfully" });
       });
     });
 
@@ -285,15 +298,35 @@ const run = async () => {
       );
       res.send({ status: true, data: result });
     });
+    //Update Work Status
+    app.put("/support-tickets/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedTicket = req.body;
+      console.log(updatedTicket);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateTicket = {
+        $set: {
+          status: updatedTicket?.status,
+        },
+      };
+      const result = await supportTicketsCollection.updateOne(
+        filter,
+        updateTicket,
+        options
+      );
+      res.send({ status: true, data: result });
+    });
     //Update leave Status
     app.put("/leave-management/:id", async (req, res) => {
       const id = req.params.id;
       const updatedLeaveStatus = req.body;
+      console.log(updatedLeaveStatus);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateLeave = {
         $set: {
-          status: updatedLeaveStatus.leaveStatus,
+          status: updatedLeaveStatus?.leave?.leaveStatus,
         },
       };
       const result = await leaveManagementCollection.updateOne(
@@ -314,6 +347,7 @@ const run = async () => {
         leaveApply,
         type,
       } = req.body;
+      console.log(leaveStatus);
 
       //Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
