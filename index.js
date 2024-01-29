@@ -391,7 +391,7 @@ const run = async () => {
 
         HR Department
         unidevGO
-        Email: <mailto:hr@unidevgo.com|hr@unidevgo.com>
+        Email: <mailto:hr@unidevgo.com>
         `,
       };
 
