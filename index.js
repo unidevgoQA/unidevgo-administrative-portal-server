@@ -35,6 +35,7 @@ const run = async () => {
     const profileCollection = database.collection("profile");
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
+    const leaveEmailListCollection = database.collection("leave-email-list-management");
     const eventManagementCollection = database.collection("event-management");
     const supportTicketsCollection = database.collection(
       "support-tickets-managements"
@@ -42,6 +43,7 @@ const run = async () => {
     const attendenceManagementCollection = database.collection(
       "attendence-management"
     );
+
 
     //Get All Profile
     app.get("/profile", async (req, res) => {
@@ -79,6 +81,12 @@ const run = async () => {
       const allTickets = await cursor.toArray();
       res.send({ status: true, data: allTickets });
     });
+    //Get All Email List
+    app.get("/email-list", async (req, res) => {
+      const cursor = leaveEmailListCollection.find({});
+      const allEmailList = await cursor.toArray();
+      res.send({ status: true, data: allEmailList });
+    });
     //Get single profile
     app.get("/profile/:id", async (req, res) => {
       const id = req.params.id;
@@ -97,6 +105,12 @@ const run = async () => {
     app.post("/profile", async (req, res) => {
       const profile = req.body;
       const result = await profileCollection.insertOne(profile);
+      res.send({ status: true, data: result });
+    });
+    //Add Email
+    app.post("/email-list", async (req, res) => {
+      const email = req.body;
+      const result = await leaveEmailListCollection.insertOne(email);
       res.send({ status: true, data: result });
     });
     //Add work status
@@ -273,6 +287,13 @@ const run = async () => {
       const result = await profileCollection.deleteOne(query);
       res.json({ status: true, data: result });
     });
+    //Delete single item from email list Api
+    app.delete("/email-list/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await leaveEmailListCollection.deleteOne(query);
+      res.json({ status: true, data: result });
+    });
     //Delete single item from support ticket
     app.delete("/support-tickets/:id", async (req, res) => {
       const id = req.params.id;
@@ -302,7 +323,6 @@ const run = async () => {
     app.put("/support-tickets/:id", async (req, res) => {
       const id = req.params.id;
       const updatedTicket = req.body;
-      console.log(updatedTicket);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateTicket = {
@@ -321,7 +341,6 @@ const run = async () => {
     app.put("/leave-management/:id", async (req, res) => {
       const id = req.params.id;
       const updatedLeaveStatus = req.body;
-      console.log(updatedLeaveStatus);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateLeave = {
@@ -341,13 +360,15 @@ const run = async () => {
     app.post("/leave-email", (req, res) => {
       const {
         leaveStatus,
-        employeeEmail,
+        recipients,
         employeeName,
         totalDays,
         leaveApply,
         type,
       } = req.body;
-      console.log(leaveStatus);
+      
+
+      const concatenatedEmails = recipients.join(',');
 
       //Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
@@ -361,7 +382,7 @@ const run = async () => {
       // Setup email data
       const mailOptions = {
         from: process.env.SENDER_EMAIL,
-        to: employeeEmail,
+        to: concatenatedEmails.split(","),
         subject: `${
           leaveStatus.charAt(0).toUpperCase() + leaveStatus.slice(1)
         } Leave Application of ${
