@@ -35,7 +35,9 @@ const run = async () => {
     const profileCollection = database.collection("profile");
     const workStatusCollection = database.collection("work-status");
     const leaveManagementCollection = database.collection("leave-management");
-    const leaveEmailListCollection = database.collection("leave-email-list-management");
+    const leaveEmailListCollection = database.collection(
+      "leave-email-list-management"
+    );
     const eventManagementCollection = database.collection("event-management");
     const supportTicketsCollection = database.collection(
       "support-tickets-managements"
@@ -43,7 +45,6 @@ const run = async () => {
     const attendenceManagementCollection = database.collection(
       "attendence-management"
     );
-
 
     //Get All Profile
     app.get("/profile", async (req, res) => {
@@ -99,6 +100,13 @@ const run = async () => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await supportTicketsCollection.findOne(query);
+      res.send({ status: true, data: result });
+    });
+    //Get single work status
+    app.get("/work-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await workStatusCollection.findOne(query);
       res.send({ status: true, data: result });
     });
     //Add Profile
@@ -301,15 +309,44 @@ const run = async () => {
       const result = await supportTicketsCollection.deleteOne(query);
       res.json({ status: true, data: result });
     });
+
+    //Update profile
+    app.put("/profile/:id", async (req, res) => {
+      const id = req.params.id;
+      const profile = req.body.updateProfile;
+
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateProfile = {
+        $set: {
+          ...profile,
+        },
+      };
+      // Remove _id from the update, as it is immutable
+      delete updateProfile.$set._id;
+
+      const result = await profileCollection.updateOne(
+        filter,
+        updateProfile,
+        options
+      );
+      res.send({ status: true, data: result });
+    });
+
     //Update Work Status
     app.put("/work-status/:id", async (req, res) => {
       const id = req.params.id;
-      const updatedTaskStatus = req.body;
+      const updatedWorkStatus = req.body;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateTask = {
         $set: {
-          workStatus: updatedTaskStatus.workStatus,
+          task: updatedWorkStatus.task,
+          date: updatedWorkStatus.date,
+          hour: updatedWorkStatus.hour,
+          workStatus: updatedWorkStatus.workStatus,
+          description: updatedWorkStatus.description,
         },
       };
       const result = await workStatusCollection.updateOne(
@@ -319,6 +356,7 @@ const run = async () => {
       );
       res.send({ status: true, data: result });
     });
+
     //Update Work Status
     app.put("/support-tickets/:id", async (req, res) => {
       const id = req.params.id;
@@ -337,6 +375,26 @@ const run = async () => {
       );
       res.send({ status: true, data: result });
     });
+
+    //Update Profile Edit Permission
+    app.put("/profile-edit/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedPermission = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateProfileEditPermission = {
+        $set: {
+          profileEditPermission: updatedPermission?.profileEditPermission,
+        },
+      };
+      const result = await profileCollection.updateOne(
+        filter,
+        updateProfileEditPermission,
+        options
+      );
+      res.send({ status: true, data: result });
+    });
+
     //Update leave Status
     app.put("/leave-management/:id", async (req, res) => {
       const id = req.params.id;
@@ -356,6 +414,7 @@ const run = async () => {
       res.send({ status: true, data: result });
     });
 
+     
     //Send leave email
     app.post("/leave-email", (req, res) => {
       const {
@@ -364,11 +423,9 @@ const run = async () => {
         employeeName,
         totalDays,
         leaveApply,
-        type,
       } = req.body;
-      
 
-      const concatenatedEmails = recipients.join(',');
+      const concatenatedEmails = recipients.join(",");
 
       //Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
@@ -423,30 +480,6 @@ const run = async () => {
         }
         res.status(200).send("Email sent: " + info.response);
       });
-    });
-
-    //Update profile
-    app.put("/profile/:id", async (req, res) => {
-      const id = req.params.id;
-      const profile = req.body.updateProfile;
-
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-
-      const updateProfile = {
-        $set: {
-          ...profile,
-        },
-      };
-      // Remove _id from the update, as it is immutable
-      delete updateProfile.$set._id;
-
-      const result = await profileCollection.updateOne(
-        filter,
-        updateProfile,
-        options
-      );
-      res.send({ status: true, data: result });
     });
   } finally {
   }
