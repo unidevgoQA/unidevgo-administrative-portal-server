@@ -357,7 +357,7 @@ const run = async () => {
       res.send({ status: true, data: result });
     });
 
-    //Update Work Status
+    //Update support ticket status
     app.put("/support-tickets/:id", async (req, res) => {
       const id = req.params.id;
       const updatedTicket = req.body;
@@ -395,6 +395,25 @@ const run = async () => {
       res.send({ status: true, data: result });
     });
 
+    //Update Appointment Permission
+    app.put("/appointment-permission/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedPermission = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateAppointmentPermission = {
+        $set: {
+          appointmentPermission: updatedPermission?.appointmentPermission,
+        },
+      };
+      const result = await profileCollection.updateOne(
+        filter,
+        updateAppointmentPermission,
+        options
+      );
+      res.send({ status: true, data: result });
+    });
+
     //Update leave Status
     app.put("/leave-management/:id", async (req, res) => {
       const id = req.params.id;
@@ -414,16 +433,10 @@ const run = async () => {
       res.send({ status: true, data: result });
     });
 
-     
     //Send leave email
     app.post("/leave-email", (req, res) => {
-      const {
-        leaveStatus,
-        recipients,
-        employeeName,
-        totalDays,
-        leaveApply,
-      } = req.body;
+      const { leaveStatus, recipients, employeeName, totalDays, leaveApply } =
+        req.body;
 
       const concatenatedEmails = recipients.join(",");
 
@@ -471,6 +484,69 @@ const run = async () => {
         unidevGO
         Email: hr@unidevgo.com
         `,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(500).send(error.toString());
+        }
+        res.status(200).send("Email sent: " + info.response);
+      });
+    });
+
+    //Send appointment confirmation email
+    app.post("/appointment-confirmation-email", (req, res) => {
+      const {
+        //Appoitment data
+        name,
+        mobile,
+        email,
+        recipients,
+        date,
+        time,
+        message,
+      } = req.body;
+
+      const recievers = [email, ...recipients];
+
+      const concatenatedEmails = recievers.join(",");
+
+      //Setup Nodemailer transporter
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.SENDER_EMAIL,
+          pass: process.env.SENDER_PASSWORD,
+        },
+      });
+
+      // Setup email data
+      const mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: concatenatedEmails.split(","),
+
+        subject: `Subject: Appointment Confirmation`,
+        text: `
+        Dear ${name.charAt(0).toUpperCase() + name.slice(1)},
+
+        Thank you for choosing unidevGO for your upcoming appointment. We are delighted to confirm the details of your scheduled meeting. Please find the information below:
+
+        Name: ${name.charAt(0).toUpperCase() + name.slice(1)}
+        Mobile: ${mobile}
+        Email: ${email}
+        Meeting with: unidevGO Member
+        Date: ${date}
+        Time: ${time}
+        Message: ${message}
+
+        Our team at unidevGO is looking forward to assisting you during your appointment. If there are any changes or if you have further questions, please feel free to reach out to us at hr@unidevgo.com .
+
+        Thank you for choosing unidevGO. We appreciate your trust in our services.
+
+        Best regards,
+        unidevGO
+      `,
       };
 
       // Send email
