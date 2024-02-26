@@ -505,6 +505,9 @@ const run = async () => {
         recipients,
         date,
         time,
+        selectMemberName,
+        selectMemberDesignation,
+        meetingUrl,
         message,
       } = req.body;
 
@@ -526,7 +529,7 @@ const run = async () => {
         from: process.env.SENDER_EMAIL,
         to: concatenatedEmails.split(","),
 
-        subject: `Subject: Appointment Confirmation`,
+        subject: `Appointment Confirmation `,
         text: `
         Dear ${name.charAt(0).toUpperCase() + name.slice(1)},
 
@@ -535,9 +538,9 @@ const run = async () => {
         Name: ${name.charAt(0).toUpperCase() + name.slice(1)}
         Mobile: ${mobile}
         Email: ${email}
-        Meeting with: unidevGO Member
-        Date: ${date}
-        Time: ${time}
+        Date & Time : ${date} - ${time} BST
+        Meeting with: ${selectMemberName} - ${selectMemberDesignation}
+        Meeting Link: ${meetingUrl}
         Message: ${message}
 
         Our team at unidevGO is looking forward to assisting you during your appointment. If there are any changes or if you have further questions, please feel free to reach out to us at hr@unidevgo.com .
