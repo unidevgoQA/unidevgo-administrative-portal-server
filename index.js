@@ -530,26 +530,30 @@ const run = async () => {
         to: concatenatedEmails.split(","),
 
         subject: `Appointment Confirmation `,
-        text: `
-        Dear ${name.charAt(0).toUpperCase() + name.slice(1)},
+        html: `
+        <div style="padding: 15px;">
+        <p>Dear ${name.charAt(0).toUpperCase() + name.slice(1)},</p>
 
-        Thank you for choosing unidevGO for your upcoming appointment. We are delighted to confirm the details of your scheduled meeting. Please find the information below:
+        <p>Thank you for choosing unidevGO for your upcoming appointment. We are delighted to confirm the details of your scheduled meeting. Please find the information below:</p>
 
-        Name: ${name.charAt(0).toUpperCase() + name.slice(1)}
-        Mobile: ${mobile}
-        Email: ${email}
-        Date & Time : ${date} - ${time} BST
-        Meeting with: ${selectMemberName} - ${selectMemberDesignation}
-        Meeting Link: ${meetingUrl}
-        Message: ${message}
+   
+        <p>Name: ${name.charAt(0).toUpperCase() + name.slice(1)}</p>
+        <p>Mobile: ${mobile}</p>
+        <p>Email: ${email}</p>
+        <p>Date & Time: ${date} - ${time} BST</p>
+        <p>Meeting with: ${selectMemberName} - ${selectMemberDesignation}</p>
+        <p>Meeting Link: ${meetingUrl}</p>
+        <p>Message: ${message}</p>
 
-        Our team at unidevGO is looking forward to assisting you during your appointment. If there are any changes or if you have further questions, please feel free to reach out to us at hr@unidevgo.com .
 
-        Thank you for choosing unidevGO. We appreciate your trust in our services.
+        <p>Our team at unidevGO is looking forward to assisting you during your appointment. If there are any changes or if you have further questions, please feel free to reach out to us at hr@unidevgo.com.</p>
 
-        Best regards,
-        unidevGO
-      `,
+        <p>Thank you for choosing unidevGO. We appreciate your trust in our services.</p>
+
+        <p>Best regards,<br>unidevGO</p>
+        </div>
+       
+    `,
       };
 
       // Send email
