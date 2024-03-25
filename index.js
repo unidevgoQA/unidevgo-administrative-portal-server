@@ -209,6 +209,7 @@ const run = async () => {
     //Send Mail
     app.post("/send-email", upload.array("attachments"), (req, res) => {
       const { recipients, subject, message } = req.body;
+      const recipientList = recipients.split(",");
 
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -218,31 +219,37 @@ const run = async () => {
         },
       });
 
-      const mailOptions = {
-        from: process.env.SENDER_EMAIL,
-        to: recipients.split(","),
-        subject: subject,
-        text: message,
-        attachments: [],
-      };
+      // Iterate over each recipient and send email individually
+      recipientList.forEach((recipient) => {
+        const mailOptions = {
+          from: process.env.SENDER_EMAIL,
+          to: recipient.trim(),
+          subject: subject,
+          text: message,
+          attachments: [],
+        };
 
-      if (req.files) {
-        req.files.forEach((file) => {
-          mailOptions.attachments.push({
-            filename: file.originalname,
-            path: file.path,
+        if (req.files) {
+          req.files.forEach((file) => {
+            mailOptions.attachments.push({
+              filename: file.originalname,
+              path: file.path,
+            });
           });
-        });
-      }
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          return res.status(500).send({ error: error.toString() });
         }
-        res
-          .status(200)
-          .send({ status: true, message: "Email sent successfully" });
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Error sending email to", recipient, ":", error);
+          } else {
+            console.log("Email sent successfully to", recipient);
+          }
+        });
       });
+
+      res
+        .status(200)
+        .send({ status: true, message: "Emails sent successfully" });
     });
 
     //Add leave management
@@ -515,6 +522,8 @@ const run = async () => {
 
       const concatenatedEmails = recievers.join(",");
 
+      console.log(concatenatedEmails);
+
       //Setup Nodemailer transporter
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -553,6 +562,53 @@ const run = async () => {
         <p>Best regards,<br>unidevGO</p>
         </div>
        
+    `,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(500).send(error.toString());
+        }
+        res.status(200).send("Email sent: " + info.response);
+      });
+    });
+
+    //Send appointment confirmation email
+    app.post("/event-email", (req, res) => {
+      const {
+        //Appoitment data
+        eventTitle,
+        employeesEmail,
+      } = req.body;
+
+      console.log(req.body);
+
+      const recievers = [...employeesEmail];
+      const concatenatedEmails = recievers.join(",");
+      console.log(concatenatedEmails);
+
+      //Setup Nodemailer transporter
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.SENDER_EMAIL,
+          pass: process.env.SENDER_PASSWORD,
+        },
+      });
+
+      // Setup email data
+      const mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: concatenatedEmails.split(","),
+
+        subject: `Wishing You a Wonderful ${eventTitle}!`,
+        html: `
+        <div style="padding: 15px;">
+        <p>Wishing you a fantastic ${eventTitle}! May it bring joy, unity, and memorable moments.</p>
+
+        <p>Best regards,<br>unidevGO</p>
+        </div>
     `,
       };
 
